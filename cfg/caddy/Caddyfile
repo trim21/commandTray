@@ -1,0 +1,5 @@
+http://127.0.0.1:8088/ {
+    gzip
+    log access.log
+    proxy / http://example.com/
+}

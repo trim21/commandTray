@@ -1,0 +1,16 @@
+program:
+  - name: hello
+    program: "caddy.exe"
+    args: ["-conf", "Caddyfile"]
+    cwd: ./cfg/caddy
+
+cron:
+  - spec: "* * * * * *"
+    name: name
+    program: echo
+    args: ["233", 233]
+#  - spec: '* * * * * *'
+#    name: name2
+#    cwd: "~"
+#    program: realpath
+#    args: [.]
