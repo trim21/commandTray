@@ -1,0 +1,6 @@
+.idea
+dist
+cfg/
+vmp/
+*.exe
+config.yaml
