@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/utahta/go-cronowriter"
@@ -15,18 +19,29 @@ var tz = time.FixedZone("Asia/Shanghai", 3600*8)
 
 type Command struct {
 	Name    string   `yaml:"name"`
-	Cwd     string   `yaml:"cwd"`
+	Cwd     string   `yaml:"cwd,omitempty"`
 	Program string   `yaml:"program"`
-	Args    []string `yaml:"args"`
+	Args    []string `yaml:"args,omitempty"`
+	Env     []string `yaml:"env,omitempty"`
 }
 
 func (c Command) stdoutWriter() io.Writer {
-	f := cronowriter.MustNew("./cfg/log/"+c.Name+"/out.%Y-%m-%d.log", cronowriter.WithLocation(tz))
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	f := cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/out.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
 	return f
 }
 
 func (c Command) stderrWriter() io.Writer {
-	f := cronowriter.MustNew("./cfg/log/"+c.Name+"/err.%Y-%m-%d.log", cronowriter.WithLocation(tz))
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	f := cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/err.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
 	return f
 }
 
@@ -35,16 +50,19 @@ func (c Command) job() *exec.Cmd {
 	if c.Cwd != "" {
 		cmd.Dir = NormalizePath(c.Cwd)
 	}
+	cmd.Env = append(os.Environ(), c.Env...)
 	return cmd
 }
 
 func (c Command) execute() {
 	cmd := c.job()
 	cmd.Stdout = c.stdoutWriter()
-	cmd.Stderr = c.stderrWriter()
+	buf := bytes.NewBuffer(nil)
+	cmd.Stderr = io.MultiWriter(c.stderrWriter(), buf)
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println("err in executing " + c.Name)
+		fmt.Println(buf.String())
 	}
 }
 
@@ -60,8 +78,29 @@ type C struct {
 	Spec    string `yaml:"spec"`
 }
 
+func (c C) MarshalYAML() (interface{}, error) {
+	return struct {
+		Spec    string `yaml:"spec"`
+		Name    string `yaml:"name"`
+		Program string `yaml:"program"`
+	}{
+		Name:    c.Name,
+		Spec:    c.Spec,
+		Program: strings.Join(append([]string{c.Program}, c.Args...), " "),
+	}, nil
+}
+
+func (c Command) MarshalYAML() (interface{}, error) {
+	return struct {
+		Name    string `yaml:"name"`
+		Program string `yaml:"program"`
+	}{
+		Name:    c.Name,
+		Program: strings.Join(append([]string{c.Program}, c.Args...), " "),
+	}, nil
+}
+
 type T struct {
-	A       string
 	Cron    []C       `yaml:"cron"`
 	Program []Command `yaml:"program"`
 }

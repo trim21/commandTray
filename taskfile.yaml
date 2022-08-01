@@ -1,0 +1,5 @@
+version: 3
+
+tasks:
+  default:
+    - go build -o dist/commandTray.exe
