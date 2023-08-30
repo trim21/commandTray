@@ -14,5 +14,5 @@ require (
 	github.com/tebeka/strftime v0.1.4 // indirect
 	github.com/utahta/go-cronowriter v1.1.1
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+	gopkg.in/yaml.v3 v3.0.0
 )
