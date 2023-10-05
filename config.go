@@ -31,8 +31,7 @@ func (c Command) stdoutWriter() io.Writer {
 		panic(err)
 	}
 
-	f := cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/out.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
-	return f
+	return cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/out.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
 }
 
 func (c Command) stderrWriter() io.Writer {
@@ -41,8 +40,7 @@ func (c Command) stderrWriter() io.Writer {
 		panic(err)
 	}
 
-	f := cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/err.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
-	return f
+	return cronowriter.MustNew(filepath.Join(homedir, "log/"+c.Name+"/err.%Y-%m-%d.log"), cronowriter.WithLocation(tz))
 }
 
 func (c Command) job() *exec.Cmd {
